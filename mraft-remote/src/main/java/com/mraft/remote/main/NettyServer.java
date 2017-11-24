@@ -1,7 +1,11 @@
 package com.mraft.remote.main;
 
+import java.util.concurrent.ConcurrentHashMap;
+
+import com.mraft.remote.handler.BizProcessor;
 import com.mraft.remote.handler.MraftServerHandler;
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
@@ -19,6 +23,20 @@ import io.netty.handler.codec.serialization.ObjectEncoder;
  * Created by T460P on 2017/10/8.
  */
 public class NettyServer {
+
+
+    private ConcurrentHashMap<Integer,BizProcessor> bizProcessorMap = new ConcurrentHashMap<>();
+
+    private ConcurrentHashMap<String,Channel> channelTable = new ConcurrentHashMap<>();
+
+    public void registerProcessor(int requestCode,BizProcessor bizProcessor){
+        if(requestCode <= 0 || bizProcessor == null){
+            return;
+        }
+        this.bizProcessorMap.put(requestCode,bizProcessor);
+    }
+
+
 
     public void start(){
         EventLoopGroup bossGroup = new NioEventLoopGroup();
