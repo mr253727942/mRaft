@@ -15,9 +15,11 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -26,7 +28,6 @@ import io.netty.handler.codec.LengthFieldPrepender;
 import io.netty.handler.codec.serialization.ClassResolvers;
 import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
-import io.netty.handler.timeout.IdleStateHandler;
 
 /**
  * Created by wenan.mr on 2017/11/26.
@@ -59,14 +60,16 @@ public class NettyClient extends AbstractNettyRemoting{
                     ch.pipeline().addLast(new ObjectDecoder(Integer.MAX_VALUE, ClassResolvers
                         .cacheDisabled(this.getClass().getClassLoader())));
                     ch.pipeline().addLast(new ObjectEncoder());
-                    ch.pipeline().addLast(new MraftClientHandler());
+                    ch.pipeline().addLast(new NettyClientHandler());
                 }
             });
     }
 
     public BaseTransferBody invokeSync(final IpWrapper ipWrapper, final BaseTransferBody request,
                                        final long timeoutMillis){
-        int opaque = request.getOpaque();
+        int opaque = BaseTransferBody.atomicInteger.addAndGet(1);
+        request.setOpaque(opaque);
+        request.setTransfertype(Transfertype.REQUEST);
         final Channel channel = this.getAndCreateChannel(ipWrapper);
         if(channel != null && channel.isActive()){
             try{
@@ -105,7 +108,12 @@ public class NettyClient extends AbstractNettyRemoting{
             }finally {
                 this.responseTable.remove(opaque);
             }
+        }else{
+            //关闭channel 后面再实现
+            return null;
         }
+
+        return null;
 
     }
 
@@ -124,7 +132,8 @@ public class NettyClient extends AbstractNettyRemoting{
             return cw.getChannel();
         }
         try{
-            if (this.lockChannelTables.tryLock(LOCK_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)) {
+            //this.lockChannelTables.tryLock(LOCK_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)) {
+            if (true){
                 try {
                     boolean createNewConnection = false;
                     cw = this.channelTables.get(ipWrapper);
@@ -166,17 +175,26 @@ public class NettyClient extends AbstractNettyRemoting{
                     }
                 } else {
                     //log.warn("createChannel: connect remote host[{}] timeout {}ms, {}", addr, this.nettyClientConfig.getConnectTimeoutMillis(),
-                        channelFuture.toString());
+                        //channelFuture.toString();
                 }
             }
-        }catch (InterruptedException e){
+        }catch (Exception e){
 
         }finally {
-            lockChannelTables.unlock();
+            //lockChannelTables.unlock();
         }
 
 
         return null;
+    }
+
+
+    class NettyClientHandler extends SimpleChannelInboundHandler<BaseTransferBody> {
+
+        @Override
+        protected void channelRead0(ChannelHandlerContext ctx, BaseTransferBody msg) throws Exception {
+            processMessageReceived(ctx, msg);
+        }
     }
 
 

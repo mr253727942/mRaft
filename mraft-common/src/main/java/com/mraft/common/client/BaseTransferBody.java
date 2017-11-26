@@ -4,13 +4,18 @@ package com.mraft.common.client;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.io.Serializable;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by T460P on 2017/9/24.
  */
 public  class BaseTransferBody implements Serializable{
 
+
+
     private static final long serialVersionUID = -2294409463453143328L;
+
+    public static final AtomicInteger atomicInteger = new AtomicInteger(0);
     /**
      * 序列化方式
      */

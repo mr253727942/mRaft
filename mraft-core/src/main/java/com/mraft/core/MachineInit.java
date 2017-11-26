@@ -6,10 +6,13 @@ import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import com.google.common.collect.Lists;
+import com.mraft.common.client.BaseTransferBody;
 import com.mraft.common.client.BizCode;
+import com.mraft.common.client.EchoBody;
 import com.mraft.common.util.IpWrapper;
 import com.mraft.core.leadership.MachineRole;
 import com.mraft.core.processor.EchoProcessor;
+import com.mraft.remote.main.NettyClient;
 import com.mraft.remote.main.NettyServer;
 
 /**
@@ -34,6 +37,24 @@ public class MachineInit {
         nettyServer.start(ipWrapper);
 
         machineRole = MachineRole.FOLLOWER;
+
+        NettyClient nettyClient = new NettyClient();
+        nettyClient.start();
+        EchoBody request = new EchoBody();
+        request.setBizCode(BizCode.ECHO.getBizCode());
+        request.setMsg("hello echo|"+ipWrapper);
+
+        while(true){
+            try{
+                Thread.sleep(2000L);
+                nettyClient.invokeSync(machineIpList.get(0),request,2000L);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+
+        }
+
+
 
 
     }
