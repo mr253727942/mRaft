@@ -3,8 +3,7 @@ package com.mraft.remote.handler;
 import com.mraft.common.client.BaseTransferBody;
 import com.mraft.common.client.BizCode;
 import com.mraft.common.client.EchoBody;
-import com.mraft.core.processor.BizProcessor;
-import com.mraft.core.processor.EchoProcessor;
+import com.mraft.remote.main.NettyServer;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.slf4j.Logger;
@@ -19,13 +18,16 @@ public class MraftServerHandler extends ChannelInboundHandlerAdapter{
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        System.out.print("client read");
+        System.out.print("NettyServer handler client read");
         if(msg instanceof BaseTransferBody){
-            if(((BaseTransferBody) msg).getBizCode() == BizCode.ECHO.getBizCode()){
-                System.out.println(msg);
-                EchoProcessor echoProcessor = new EchoProcessor();
-                echoProcessor.process((EchoBody)msg,ctx);
+            BaseTransferBody baseTransferBody = (BaseTransferBody)msg;
+            if(!NettyServer.bizProcessorMap.containsKey((baseTransferBody.getBizCode()))){
+                logger.error("MraftServerHandler | can not get this bizCode | {}",new Object[]{(baseTransferBody.getBizCode())});
+                return;
             }
+
+            BizProcessor bizProcessor = NettyServer.bizProcessorMap.get(baseTransferBody.getBizCode());
+            bizProcessor.process((BaseTransferBody)msg,ctx);
 
 
         }else{
@@ -33,6 +35,7 @@ public class MraftServerHandler extends ChannelInboundHandlerAdapter{
         }
     }
 
+    @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         System.out.print(cause.toString());
         logger.error("catch cause ",cause);

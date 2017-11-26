@@ -2,6 +2,7 @@ package com.mraft.remote.main;
 
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.mraft.common.util.IpWrapper;
 import com.mraft.remote.handler.BizProcessor;
 import com.mraft.remote.handler.MraftServerHandler;
 import io.netty.bootstrap.ServerBootstrap;
@@ -25,20 +26,20 @@ import io.netty.handler.codec.serialization.ObjectEncoder;
 public class NettyServer {
 
 
-    private ConcurrentHashMap<Integer,BizProcessor> bizProcessorMap = new ConcurrentHashMap<>();
+    public static ConcurrentHashMap<Integer,BizProcessor> bizProcessorMap = new ConcurrentHashMap<>();
 
-    private ConcurrentHashMap<String,Channel> channelTable = new ConcurrentHashMap<>();
 
-    public void registerProcessor(int requestCode,BizProcessor bizProcessor){
+
+    public static void registerProcessor(int requestCode,BizProcessor bizProcessor){
         if(requestCode <= 0 || bizProcessor == null){
             return;
         }
-        this.bizProcessorMap.put(requestCode,bizProcessor);
+        bizProcessorMap.put(requestCode,bizProcessor);
     }
 
 
 
-    public void start(){
+    public void start(IpWrapper ipWrapper){
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
 
@@ -64,7 +65,7 @@ public class NettyServer {
 
                     });
 
-            ChannelFuture f = b.bind("127.0.0.1",1234).sync();
+            ChannelFuture f = b.bind(ipWrapper.getIp(),ipWrapper.getPort()).sync();
 
             f.channel().closeFuture().sync();
 
@@ -77,6 +78,10 @@ public class NettyServer {
 
     public static void main(String[] args){
         NettyServer nettyServer = new NettyServer();
-        nettyServer.start();
+
     }
+
+
+
+
 }

@@ -5,7 +5,7 @@ package com.mraft.common.client;
  */
 public enum BizCode {
 
-    ECHO(1,"echo");
+    ECHO(1,"echo"),ERROR(400,"error");
 
 
     private String bizMsg;

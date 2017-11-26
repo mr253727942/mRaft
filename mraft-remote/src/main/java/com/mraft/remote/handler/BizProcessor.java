@@ -17,7 +17,7 @@ public interface BizProcessor {
      * @param baseTransferBody
      * @param ctx
      */
-    void process(BaseTransferBody baseTransferBody, ChannelHandlerContext ctx );
+    BaseTransferBody process(BaseTransferBody baseTransferBody, ChannelHandlerContext ctx );
 
 
 }
