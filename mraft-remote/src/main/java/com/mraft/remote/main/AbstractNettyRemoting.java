@@ -47,7 +47,6 @@ public abstract class AbstractNettyRemoting {
     }
 
     public void processRequestCommand(final ChannelHandlerContext ctx, final BaseTransferBody msg) {
-        System.out.print("NettyServer handler client read");
 
         if(msg instanceof BaseTransferBody){
             BaseTransferBody baseTransferBody = (BaseTransferBody)msg;
@@ -71,12 +70,13 @@ public abstract class AbstractNettyRemoting {
                             try{
                                 ctx.writeAndFlush(response);
                             }catch (Exception e){
-                                //todo log
+                               e.printStackTrace();
                             }
 
                         }
                     }catch (Throwable e){
                         //todo 异常处理
+                        e.printStackTrace();
                     }
 
 
@@ -101,7 +101,7 @@ public abstract class AbstractNettyRemoting {
             responseFuture.release();
 
             responseTable.remove(opaque);
-
+            System.out.print(222);
 
             responseFuture.putResponse(cmd);
 

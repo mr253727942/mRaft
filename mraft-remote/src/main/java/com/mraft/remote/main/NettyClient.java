@@ -79,6 +79,7 @@ public class NettyClient extends AbstractNettyRemoting{
                     @Override
                     public void operationComplete(ChannelFuture f) throws Exception {
                         if (f.isSuccess()) {
+                            System.out.print(234);
                             responseFuture.setSendRequestOK(true);
                             return;
                         } else {

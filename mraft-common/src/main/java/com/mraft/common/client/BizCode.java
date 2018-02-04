@@ -1,11 +1,11 @@
 package com.mraft.common.client;
 
 /**
- * Created by T460P on 2017/9/25.
+ * Created by wenan.mr on 2017/9/25.
  */
 public enum BizCode {
 
-    ECHO(1,"echo"),ERROR(400,"error");
+    ECHO(1,"echo"),ERROR(400,"error"),HEATBEAT(2,"heatbeat"),VOTE(3,"vote");
 
 
     private String bizMsg;

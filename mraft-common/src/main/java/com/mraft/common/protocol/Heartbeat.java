@@ -1,12 +1,16 @@
 package com.mraft.common.protocol;
 
+import com.mraft.common.client.BaseTransferBody;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 /**
  * Created by wenan.mr on 2017/11/26.
  *
  * @author wenan.mr
  * @date 2017/11/26
  */
-public class Heatbeat {
+public class Heartbeat extends BaseTransferBody{
+
     private long term;
 
     private long leaderId;
@@ -16,6 +20,16 @@ public class Heatbeat {
     private long prevLogTerm;
 
     private long leaderCommit;
+
+    private long acceptTime;
+
+    public long getAcceptTime() {
+        return acceptTime;
+    }
+
+    public void setAcceptTime(long acceptTime) {
+        this.acceptTime = acceptTime;
+    }
 
     public long getTerm() {
         return term;
@@ -55,5 +69,10 @@ public class Heatbeat {
 
     public void setLeaderCommit(long leaderCommit) {
         this.leaderCommit = leaderCommit;
+    }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this);
     }
 }

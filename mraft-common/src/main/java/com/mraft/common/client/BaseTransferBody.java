@@ -1,10 +1,11 @@
 package com.mraft.common.client;
 
 
-import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 /**
  * Created by T460P on 2017/9/24.
@@ -62,12 +63,8 @@ public  class BaseTransferBody implements Serializable{
         this.bizCode = bizCode;
     }
 
-
-
     @Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this);
     }
-
-
 }

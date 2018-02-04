@@ -3,12 +3,17 @@ package com.mraft.core;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.google.common.collect.Lists;
 import com.mraft.common.client.BaseTransferBody;
 import com.mraft.common.client.BizCode;
 import com.mraft.common.client.EchoBody;
+import com.mraft.common.protocol.Heartbeat;
+import com.mraft.common.protocol.HeatbeatResponse;
+import com.mraft.common.store.LogEntry;
 import com.mraft.common.util.IpWrapper;
 import com.mraft.core.leadership.MachineRole;
 import com.mraft.core.processor.EchoProcessor;
@@ -23,12 +28,25 @@ import com.mraft.remote.main.NettyServer;
  */
 public class MachineInit {
 
+
+    //核心状态机驱动
+
     List<IpWrapper> machineIpList = Lists.newArrayList();
 
+    public static  IpWrapper leader;
 
-    private MachineRole machineRole;
+    public static  List<LogEntry> logList = Lists.newArrayList();
 
-    private Long lastLeaderElectTime;
+    public static  long commitIndex;
+
+    public static LinkedBlockingQueue<HeatbeatResponse> heatbeatResponseLinkedBlockingQueue = new LinkedBlockingQueue<>();
+
+
+
+    public static  MachineRole machineRole;
+
+    public static AtomicLong  currentTermId = new AtomicLong(0L);
+
 
 
     public void init(IpWrapper ipWrapper) {
@@ -40,19 +58,16 @@ public class MachineInit {
 
         NettyClient nettyClient = new NettyClient();
         nettyClient.start();
-        EchoBody request = new EchoBody();
-        request.setBizCode(BizCode.ECHO.getBizCode());
-        request.setMsg("hello echo|"+ipWrapper);
 
-        while(true){
-            try{
-                Thread.sleep(2000L);
-                nettyClient.invokeSync(machineIpList.get(0),request,2000L);
-            }catch (Exception e){
-                e.printStackTrace();
-            }
 
+        try{
+            Thread.sleep(2000L);
+            BaseTransferBody baseTransferBody = nettyClient.invokeSync(machineIpList.get(0),request,2000L);
+            System.out.println(ipWrapper +"receive response |" + baseTransferBody);
+        }catch (Exception e){
+            e.printStackTrace();
         }
+
 
 
 
@@ -80,11 +95,23 @@ public class MachineInit {
         this.machineIpList = machineIpList;
     }
 
-    public MachineRole getMachineRole() {
-        return machineRole;
+
+
+    public IpWrapper getLeader() {
+        return leader;
     }
 
-    public void setMachineRole(MachineRole machineRole) {
-        this.machineRole = machineRole;
+    public void setLeader(IpWrapper leader) {
+        this.leader = leader;
     }
+
+    public static AtomicLong getCurrentTermId() {
+        return currentTermId;
+    }
+
+    public static void setCurrentTermId(AtomicLong currentTermId) {
+        MachineInit.currentTermId = currentTermId;
+    }
+
+
 }

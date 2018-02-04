@@ -16,11 +16,6 @@ public class EchoProcessor implements BizProcessor {
         BaseTransferBody response = new EchoBody();
         if(baseTransferBody != null && baseTransferBody instanceof EchoBody){
             EchoBody echoBody = (EchoBody) baseTransferBody;
-            System.out.println(echoBody);
-            echoBody.setMsg("收到");
-            ctx.writeAndFlush(echoBody);
-
-
             echoBody.setBizCode(BizCode.ECHO.getBizCode());
             echoBody.setMsg("服务端收到");
             return echoBody;
