@@ -102,7 +102,7 @@ public class MachineInit {
     }
 
     public void setLeader(IpWrapper leader) {
-        this.leader = leader;
+        MachineInit.leader = leader;
     }
 
     public static AtomicLong getCurrentTermId() {
