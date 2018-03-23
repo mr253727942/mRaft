@@ -58,6 +58,13 @@ public class MachineInit {
 
         NettyClient nettyClient = new NettyClient();
         nettyClient.start();
+        Heartbeat request = new Heartbeat();
+        request.setTerm(currentTermId.get());
+        request.setLeaderId(leader.getIp().hashCode());
+        request.setLeaderCommit(0L);
+        request.setPrevLogIndex(0L);
+        request.setPrevLogTerm(0L);
+
 
 
         try{

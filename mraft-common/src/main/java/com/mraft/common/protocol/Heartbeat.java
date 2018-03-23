@@ -1,6 +1,8 @@
 package com.mraft.common.protocol;
 
 import com.mraft.common.client.BaseTransferBody;
+import com.mraft.common.client.BizCode;
+import com.mraft.common.client.Transfertype;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 /**
@@ -10,6 +12,11 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
  * @date 2017/11/26
  */
 public class Heartbeat extends BaseTransferBody{
+
+    public Heartbeat(){
+        super.setBizCode(BizCode.HEATBEAT.getBizCode());
+        super.setTransfertype(Transfertype.REQUEST);
+    }
 
     private long term;
 
