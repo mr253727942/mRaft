@@ -2,6 +2,7 @@ package com.mraft.core.leadership;
 
 import java.util.List;
 
+import com.mraft.common.client.BaseTransferBody;
 import com.mraft.common.client.BizCode;
 import com.mraft.common.protocol.Heartbeat;
 import com.mraft.common.protocol.HeatbeatResponse;
@@ -9,6 +10,8 @@ import com.mraft.common.protocol.VoteRequest;
 import com.mraft.common.protocol.VoteResponse;
 import com.mraft.common.store.LogEntry;
 import com.mraft.core.MachineInit;
+import com.mraft.remote.handler.BizProcessor;
+import io.netty.channel.ChannelHandlerContext;
 
 /**
  * Created by wenan.mr on 2017/11/29.
@@ -16,7 +19,7 @@ import com.mraft.core.MachineInit;
  * @author wenan.mr
  * @date 2017/11/29
  */
-public class LeaderElection {
+public class VoteProccessor implements BizProcessor{
 
     public HeatbeatResponse ackHeatBeatRequest(Heartbeat heartbeat){
         HeatbeatResponse heatbeatResponse = new HeatbeatResponse();
@@ -74,5 +77,21 @@ public class LeaderElection {
         voteResponse.setTerm(MachineInit.currentTermId.get());
         voteResponse.setVoteGranted(false);
         return voteResponse;
+    }
+
+    @Override
+    public BaseTransferBody process(BaseTransferBody baseTransferBody, ChannelHandlerContext ctx) {
+        if(baseTransferBody instanceof VoteRequest){
+            VoteRequest voteRequest = (VoteRequest) baseTransferBody;
+            return  ackVoteResponse(voteRequest);
+
+        }
+
+        if(baseTransferBody instanceof Heartbeat){
+            Heartbeat heartbeat = (Heartbeat) baseTransferBody;
+            return ackHeatBeatRequest(heartbeat);
+        }
+
+        return null;
     }
 }

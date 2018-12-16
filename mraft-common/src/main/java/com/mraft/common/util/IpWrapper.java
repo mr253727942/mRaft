@@ -1,12 +1,14 @@
 package com.mraft.common.util;
 
+import java.io.Serializable;
+
 /**
  * Created by wenan.mr on 2017/11/26.
  *
  * @author wenan.mr
  * @date 2017/11/26
  */
-public class IpWrapper {
+public class IpWrapper implements Serializable {
 
     private static final String SPLIT = ":";
 

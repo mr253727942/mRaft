@@ -13,12 +13,17 @@ import com.mraft.common.client.BizCode;
 import com.mraft.common.client.EchoBody;
 import com.mraft.common.protocol.Heartbeat;
 import com.mraft.common.protocol.HeatbeatResponse;
+import com.mraft.common.protocol.VoteRequest;
 import com.mraft.common.store.LogEntry;
 import com.mraft.common.util.IpWrapper;
+import com.mraft.core.Thread.HeatbeatThread;
 import com.mraft.core.leadership.MachineRole;
+import com.mraft.core.leadership.VoteProccessor;
 import com.mraft.core.processor.EchoProcessor;
+import com.mraft.core.processor.HeartBeatProcessor;
 import com.mraft.remote.main.NettyClient;
 import com.mraft.remote.main.NettyServer;
+import sun.nio.ch.Net;
 
 /**
  * Created by wenan.mr on 2017/11/23.
@@ -31,7 +36,10 @@ public class MachineInit {
 
     //核心状态机驱动
 
-    List<IpWrapper> machineIpList = Lists.newArrayList();
+    /**
+     * 集群其他机器
+     */
+    private static List<IpWrapper> machineIpList = Lists.newArrayList();
 
     public static  IpWrapper leader;
 
@@ -41,7 +49,7 @@ public class MachineInit {
 
     public static LinkedBlockingQueue<HeatbeatResponse> heatbeatResponseLinkedBlockingQueue = new LinkedBlockingQueue<>();
 
-
+    public static NettyClient nettyClient;
 
     public static  MachineRole machineRole;
 
@@ -52,29 +60,32 @@ public class MachineInit {
     public void init(IpWrapper ipWrapper) {
         NettyServer nettyServer = new NettyServer();
         NettyServer.registerProcessor(BizCode.ECHO.getBizCode(), new EchoProcessor());
+        NettyServer.registerProcessor(BizCode.HEATBEAT.getBizCode(),new HeartBeatProcessor());
+        NettyServer.registerProcessor(BizCode.VOTE.getBizCode(),new VoteProccessor());
         nettyServer.start(ipWrapper);
 
         machineRole = MachineRole.FOLLOWER;
-
-        NettyClient nettyClient = new NettyClient();
+        nettyClient = new NettyClient();
         nettyClient.start();
         Heartbeat request = new Heartbeat();
         request.setTerm(currentTermId.get());
-        request.setLeaderId(leader.getIp().hashCode());
+        leader = MachineInit.getMachineIpList().get(0);
+        request.setLeaderId((leader.getIp() + leader.getPort()).hashCode());
         request.setLeaderCommit(0L);
         request.setPrevLogIndex(0L);
         request.setPrevLogTerm(0L);
 
+        HeatbeatThread heatbeatThread =  new HeatbeatThread();
+        new Thread(heatbeatThread).start();
 
-
-        try{
+      /*  try{
             Thread.sleep(2000L);
             BaseTransferBody baseTransferBody = nettyClient.invokeSync(machineIpList.get(0),request,2000L);
             System.out.println(ipWrapper +"receive response |" + baseTransferBody);
         }catch (Exception e){
             e.printStackTrace();
         }
-
+*/
 
 
 
@@ -84,9 +95,9 @@ public class MachineInit {
     public static void main(String[] args) throws UnknownHostException {
        String localIp = args[0];
        MachineInit machineInit = new MachineInit();
-       machineInit.getMachineIpList().add(IpWrapper.convert(args[1]));
-       machineInit.getMachineIpList().add(IpWrapper.convert(args[2]));
-       System.out.print(machineInit.getMachineIpList());
+        MachineInit.getMachineIpList().add(IpWrapper.convert(args[1]));
+        MachineInit.getMachineIpList().add(IpWrapper.convert(args[2]));
+       System.out.print(MachineInit.getMachineIpList());
 
        machineInit.init(IpWrapper.convert(localIp));
 
@@ -94,12 +105,12 @@ public class MachineInit {
 
     }
 
-    public List<IpWrapper> getMachineIpList() {
+    public synchronized static  List<IpWrapper>  getMachineIpList() {
         return machineIpList;
     }
 
-    public void setMachineIpList(List<IpWrapper> machineIpList) {
-        this.machineIpList = machineIpList;
+    public synchronized static   void setMachineIpList(List<IpWrapper> machineIpList) {
+        machineIpList = machineIpList;
     }
 
 

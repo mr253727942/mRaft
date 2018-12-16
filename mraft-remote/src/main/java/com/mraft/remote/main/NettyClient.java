@@ -5,6 +5,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.alibaba.fastjson.JSON;
+
 import com.mraft.common.client.BaseTransferBody;
 import com.mraft.common.client.ResponseFuture;
 import com.mraft.common.client.Transfertype;
@@ -83,6 +85,7 @@ public class NettyClient extends AbstractNettyRemoting{
                             responseFuture.setSendRequestOK(true);
                             return;
                         } else {
+                            System.out.println(JSON.toJSON(f));
                             responseFuture.setSendRequestOK(false);
                         }
 
@@ -105,7 +108,7 @@ public class NettyClient extends AbstractNettyRemoting{
                 return response;
 
             }catch (Exception e){
-
+                System.out.println(e);
             }finally {
                 this.responseTable.remove(opaque);
             }

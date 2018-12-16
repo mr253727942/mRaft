@@ -18,7 +18,7 @@ public class MraftServerHandler extends ChannelInboundHandlerAdapter{
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        System.out.print("NettyServer handler client read");
+        System.out.print("NettyServer handler Server read");
         if(msg instanceof BaseTransferBody){
             BaseTransferBody baseTransferBody = (BaseTransferBody)msg;
             if(!NettyServer.bizProcessorMap.containsKey((baseTransferBody.getBizCode()))){
@@ -27,7 +27,10 @@ public class MraftServerHandler extends ChannelInboundHandlerAdapter{
             }
 
             BizProcessor bizProcessor = NettyServer.bizProcessorMap.get(baseTransferBody.getBizCode());
-            bizProcessor.process((BaseTransferBody)msg,ctx);
+            BaseTransferBody response = bizProcessor.process((BaseTransferBody)msg,ctx);
+            if(response != null){
+                ctx.writeAndFlush(response);
+            }
 
 
         }else{
